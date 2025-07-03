@@ -1,0 +1,81 @@
+﻿@page "/products"
+@attribute [Authorize]
+@inject ProductService PService
+@inject NavigationManager NavManager
+@using BlazorProductStore.DAL.Models
+
+<h3>Products</h3>
+
+@if (_products == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Price</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var product in _products)
+            {
+                <tr>
+                    <td>@product.ProductName</td>
+                    <td>@product.Price.ToString("c")</td>
+                    <td>
+                        <button class="btn btn-primary btn-sm">Edit</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <hr />
+    <h4>Add New Product</h4>
+    <EditForm Model="@_newProduct" OnValidSubmit="HandleAddProduct">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="mb-3">
+            <label class="form-label">Product Name</label>
+            <InputText class="form-control" @bind-Value="_newProduct.ProductName" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Price</label>
+            <InputNumber class="form-control" @bind-Value="_newProduct.Price" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Category ID</label>
+            <InputNumber class="form-control" @bind-Value="_newProduct.CategoryId" />
+        </div>
+        <button type="submit" class="btn btn-success">Add Product</button>
+    </EditForm>
+}
+
+@code {
+    private List<Product>? _products;
+    private Product _newProduct = new();
+
+    protected override void OnInitialized()
+    {
+        _products = PService.GetProducts();
+    }
+
+    private void HandleAddProduct()
+    {
+        try
+        {
+            PService.AddProduct(_newProduct);
+            // Refresh list or navigate
+            NavManager.NavigateTo("/products", forceLoad: true);
+        }
+        catch (Exception ex)
+        {
+            // Handle error
+        }
+    }
+}

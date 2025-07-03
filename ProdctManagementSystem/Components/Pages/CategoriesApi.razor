@@ -1,0 +1,38 @@
+﻿@page "/categories-from-api"
+@inject CategoryApiService ApiService
+@using BlazorProductStore.DAL.Models
+
+<h3>Categories (from Web API)</h3>
+
+@if (_categories == null)
+{
+    <p><em>Loading categories... 📡</em></p>
+}
+else
+{
+    <ul class="list-group">
+        @foreach (var category in _categories)
+        {
+            <li class="list-group-item">@category.CategoryName</li>
+        }
+    </ul>
+}
+
+@code {
+    private List<Category>? _categories;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Call the service to fetch data from the API when the component loads
+        try
+        {
+            _categories = await ApiService.GetCategoriesAsync();
+        }
+        catch (Exception ex)
+        {
+            // Handle potential exceptions, e.g., API is down
+            Console.WriteLine($"Error fetching categories: {ex.Message}");
+            // Optionally, display an error message to the user
+        }
+    }
+}

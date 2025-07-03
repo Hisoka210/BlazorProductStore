@@ -1,0 +1,48 @@
+﻿@page "/profile"
+@attribute [Authorize]
+@inject UserService UserSvc
+
+<h3>My Profile</h3>
+
+@if (_user == null)
+{
+    <p><em>Loading your profile...</em></p>
+}
+else
+{
+    <div class="card" style="width: 25rem;">
+        <div class="card-body">
+            <h5 class="card-title">@_user.Name</h5>
+            <h6 class="card-subtitle mb-2 text-muted">@_user.Email</h6>
+            <p class="card-text">
+                <strong>Database ID:</strong> @_user.Id<br />
+                <strong>Google ID:</strong> @_user.GoogleId<br />
+                <strong>Member Since:</strong> @_user.CreatedAt.ToShortDateString()
+            </p>
+        </div>
+    </div>
+}
+
+@code {
+    // This will hold our user data from the database
+    private BlazorProductStore.DAL.Models.User? _user;
+
+    // Get the current authentication state from Blazor's framework
+    [CascadingParameter]
+    private Task<AuthenticationState>? authenticationStateTask { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (authenticationStateTask == null) return;
+
+        var authState = await authenticationStateTask;
+        var userClaims = authState.User;
+
+        // If the user is authenticated, process their login
+        if (userClaims.Identity?.IsAuthenticated == true)
+        {
+            // This single line triggers the entire database check-and-save process!
+            _user = UserSvc.FindOrCreateUser(userClaims);
+        }
+    }
+}
